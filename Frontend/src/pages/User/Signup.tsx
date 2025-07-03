@@ -36,7 +36,9 @@ export default function Signup() {
           localStorage.setItem("token", res.token);
           successToast("Sign in successful");
           resetForm();
-          navigate("/");
+          setTimeout(() => {
+            navigate("/");
+          }, 100);
         } else {
           errorToast(res?.error || "Login failed");
         }

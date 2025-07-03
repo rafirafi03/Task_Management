@@ -37,7 +37,7 @@ export default function Login() {
           resetForm();
           setTimeout(() => {
             navigate("/");
-          }, 200);
+          }, 100);
         } else {
           errorToast(res?.error || "Login failed");
         }

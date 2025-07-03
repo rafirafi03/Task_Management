@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (isError) {
-      navigate("/login");
+      navigate("/admin/login");
     }
   }, [isError, navigate]);
 
