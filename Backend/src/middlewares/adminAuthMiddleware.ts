@@ -11,13 +11,16 @@ const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies.adminToken;
+  // Check Authorization header first, then cookies as fallback
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') 
+    ? authHeader.substring(7) 
+    : req.cookies.adminToken;
 
   if (!token) {
     res
       .status(HttpStatusCode.UNAUTHORIZED)
       .json({ success: false, message: "Unauthorized" });
-
     return;
   }
 

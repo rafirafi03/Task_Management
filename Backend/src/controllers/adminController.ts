@@ -53,13 +53,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "1h" } as jwt.SignOptions
     );
 
-    res.cookie("adminToken", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 3600000,
-    });
-
     res.status(HttpStatusCode.OK).json({
       success: true,
       message: "Admin logged in successfully",

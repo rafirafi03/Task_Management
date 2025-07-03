@@ -5,7 +5,22 @@ export const apiSlices = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({
     baseUrl: baseUrl,
-    credentials: "include",
+    prepareHeaders: (headers, { endpoint }) => {
+      const isAdminEndpoint =
+        endpoint.includes("admin") ||
+        endpoint === "fetchUsers" ||
+        endpoint === "fetchUserDetails";
+
+      const token = isAdminEndpoint
+        ? localStorage.getItem("adminToken")
+        : localStorage.getItem("token");
+
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
+
+      return headers;
+    },
   }),
   endpoints: (builder) => ({
     signup: builder.mutation({

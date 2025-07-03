@@ -65,7 +65,6 @@ export default function Dashboard() {
   const [updateStatusMutation] = useUpdateStatusMutation();
   const [updateTitleMutation] = useUpdateTaskMutation();
 
-  // Force refetch when userId changes (on login)
   useEffect(() => {
     if (userId) {
       refetch();

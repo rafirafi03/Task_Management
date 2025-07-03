@@ -48,13 +48,6 @@ const signupUser = async (req: Request, res: Response): Promise<void> => {
       { expiresIn: process.env.JWT_EXPIRES_IN || "1h" } as jwt.SignOptions
     );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 3600000,
-    });
-
     res.status(HttpStatusCode.CREATED).json({
       success: true,
       message: "User created successfully",
@@ -104,13 +97,6 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       process.env.JWT_SECRET || "defaultSecret",
       { expiresIn: process.env.JWT_EXPIRES_IN || "1h" } as jwt.SignOptions
     );
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 3600000,
-    });
 
     res.status(HttpStatusCode.OK).json({
       success: true,
