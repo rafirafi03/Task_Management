@@ -28,4 +28,19 @@ A full-stack task management system where users can manage their tasks and admin
 
 ```bash
 git clone https://github.com/rafirafi03/Task_Management.git
-cd task-management-app
+cd app
+
+2. Install dependencies
+
+Backend:
+
+cd backend
+npm install
+npm run dev
+
+
+Frontend:
+
+cd frontend
+npm install
+npm run dev
