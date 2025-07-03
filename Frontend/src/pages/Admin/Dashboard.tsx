@@ -1,10 +1,26 @@
 import UsersList from "../../components/Admin/UserList/Users";
 import Header from "../../components/Admin/Header/Header";
 import { useFetchUsersQuery } from "../../store/slices/apiSlice";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import fetchErrorCheck from "../../utils/fetchErrorCheck";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-  const { data, isLoading, error } = useFetchUsersQuery(undefined);
+    const navigate = useNavigate()
+  const { data, isLoading, error: fetchUserError } = useFetchUsersQuery(undefined);
+
+  const isError = useMemo(() => {
+      return fetchErrorCheck({
+        fetchError: fetchUserError,
+        tokenName: 'adminToken'
+      });
+    }, [fetchUserError]);
+  
+    useEffect(() => {
+      if (isError) {
+        navigate("/login");
+      }
+    }, [isError, navigate]);
 
 
   const users = useMemo(() => data?.users, [data?.users]);
@@ -22,7 +38,7 @@ export default function Dashboard() {
   }
 
 
-  if (error) {
+  if (fetchUserError) {
     return (
       <>
         <Header />

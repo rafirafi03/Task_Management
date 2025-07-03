@@ -1,54 +1,69 @@
 import { useAdminLoginMutation } from "../../store/slices/apiSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { dismissToast, errorToast, loadingToast, successToast } from "../../utils/toast";
+import {
+  dismissToast,
+  errorToast,
+  loadingToast,
+  successToast,
+} from "../../utils/toast";
 import { useNavigate } from "react-router-dom";
 import useLoginForm from "../../hooks/useLoginForm";
 import { useCallback } from "react";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [loginMutation] = useAdminLoginMutation()
+  const [loginMutation] = useAdminLoginMutation();
   const { values, errors, handleChange, validate, resetForm } = useLoginForm();
 
-    const loginHandler = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const loginHandler = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (!validate()) return;
+      if (!validate()) return;
 
-    try {
-      const toastLoading = loadingToast("Loggin in...");
-      const res = await loginMutation({
-        email: values.email,
-        password: values.password,
-      }).unwrap();
+      try {
+        const toastLoading = loadingToast("Loggin in...");
+        const res = await loginMutation({
+          email: values.email,
+          password: values.password,
+        }).unwrap();
 
-      dismissToast(toastLoading);
+        dismissToast(toastLoading);
 
-      if (res.success && res.token) {
-        localStorage.setItem("adminToken", res.token);
-        successToast("Sign in successful");
-        resetForm();
-        navigate("/admin");
-      } else {
-        errorToast(res?.error || "Login failed");
+        if (res.success && res.token) {
+          localStorage.setItem("adminToken", res.token);
+          successToast("Sign in successful");
+          resetForm();
+          setTimeout(() => {
+            navigate("/admin");
+          }, 100);
+        } else {
+          errorToast(res?.error || "Login failed");
+        }
+      } catch (err) {
+        toast.dismiss();
+
+        const errorMessage =
+          (err as { data?: { error?: string }; status?: number })?.data
+            ?.error || "Login failed";
+
+        errorToast(errorMessage);
       }
-      
-    } catch (err) {
-      toast.dismiss();
-
-      // Check if it's a fetchBaseQueryError (common in RTK Query)
-      const errorMessage =
-        (err as { data?: { error?: string }; status?: number })?.data?.error ||
-        "Login failed";
-
-      errorToast(errorMessage);
-    }
-  }, [loginMutation, values.email, values.password, validate, resetForm, navigate]);
+    },
+    [
+      loginMutation,
+      values.email,
+      values.password,
+      validate,
+      resetForm,
+      navigate,
+    ]
+  );
 
   return (
     <div className="flex justify-center items-center h-screen">
-        {" "}
+      {" "}
       <div className="w-full max-w-md p-4 bg-gray-900 border border-gray-200 rounded-lg shadow-sm sm:p-6 md:p-8 dark:bg-gray-900 dark:border-blue-950">
         <form className="space-y-6" onSubmit={loginHandler}>
           <h5 className="text-xl font-medium text-gray-900 dark:text-white">
