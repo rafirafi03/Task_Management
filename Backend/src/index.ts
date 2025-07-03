@@ -4,6 +4,9 @@ import userRoutes from './routes/userRoutes'
 import adminRoutes from './routes/adminRoutes'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const app = express()
 
@@ -14,7 +17,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_PORT || "https://task-management-lime-nine.vercel.app",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
