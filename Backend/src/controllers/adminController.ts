@@ -5,24 +5,22 @@ import User from "../models/userModel";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import TaskModel from "../models/taskModel";
-import UserModel from '../models/userModel';
+import UserModel from "../models/userModel";
 import { signupSchema } from "../validations/authValidation";
 
 dotenv.config();
 
-
 const login = async (req: Request, res: Response): Promise<void> => {
   try {
-
     const { error } = signupSchema.validate(req.body);
-        if (error) {
-          res.status(HttpStatusCode.BAD_REQUEST).json({
-            success: false,
-            error: error.details[0].message,
-          });
-          return;
-        }
-        
+    if (error) {
+      res.status(HttpStatusCode.BAD_REQUEST).json({
+        success: false,
+        error: error.details[0].message,
+      });
+      return;
+    }
+
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
@@ -81,45 +79,39 @@ const fetchUsers = async (req: Request, res: Response): Promise<void> => {
     const users = await UserModel.find();
 
     res.status(HttpStatusCode.OK).json({
-      message: "✅ Users fetched successfully",
+      message: "Users fetched successfully",
       users,
     });
   } catch (error) {
     res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-      message: "❌ Error processing data",
+      message: "Error processing data",
       error,
     });
   }
 };
 
-const fetchUserDetails = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+const fetchUserDetails = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId } = req.params;
-    console.log(userId,"useriiddidididiid")
+    console.log(userId, "useriiddidididiid");
 
     const tasks = await TaskModel.find({ userId });
 
-    console.log(tasks,"tasks 123dfdf  1234")
+    console.log(tasks, "tasks 123dfdf  1234");
 
     res.status(HttpStatusCode.OK).json({
-      message: "✅ Tasks fetched successfully",
+      message: "Tasks fetched successfully",
       tasks,
     });
   } catch (error) {
     res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-      message: "❌ Error processing data",
+      message: "Error processing data",
       error,
     });
   }
 };
 
-const logout = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+const logout = async (req: Request, res: Response): Promise<void> => {
   try {
     res.setHeader("Set-Cookie", [
       "adminToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Expires=Thu, 01 Jan 1970 00:00:00 UTC",
@@ -131,17 +123,17 @@ const logout = async (
     console.error("Error processing trips:", error);
     res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "❌ Error processing data",
+      message: "Error processing data",
       error: error instanceof Error ? error.message : "Unknown error occurred",
     });
   }
 };
 
 const adminController = {
-    login,
-    fetchUserDetails,
-    fetchUsers,
-    logout
-}
+  login,
+  fetchUserDetails,
+  fetchUsers,
+  logout,
+};
 
-export default adminController
+export default adminController;

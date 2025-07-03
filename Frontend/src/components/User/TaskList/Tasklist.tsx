@@ -17,13 +17,17 @@ export default function TaskList({
   updateTaskTitle,
 }: Props) {
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState<string | null>(null);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState<string | null>(
+    null
+  );
   const [editingTask, setEditingTask] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState<string>("");
 
-  // Memoize static data to prevent recreation
-  const statusOptions: StatusType[] = useMemo(() => ["pending", "in-progress", "completed"], []);
-
+  
+  const statusOptions: StatusType[] = useMemo(
+    () => ["pending", "in-progress", "completed"],
+    []
+  );
 
   const getStatusColor = useCallback((status: string) => {
     switch (status.toLowerCase()) {
@@ -38,53 +42,68 @@ export default function TaskList({
     }
   }, []);
 
-  // Memoize handlers to prevent recreation on every render
-  const handleDelete = useCallback((taskId: string) => {
-    deleteTask(taskId);
-    setDropdownOpen(null);
-  }, [deleteTask]);
+  
+  const handleDelete = useCallback(
+    (taskId: string) => {
+      deleteTask(taskId);
+      setDropdownOpen(null);
+    },
+    [deleteTask]
+  );
 
-  const handleStatusChange = useCallback((taskId: string, newStatus: StatusType) => {
-    if (updateTaskStatus) {
-      updateTaskStatus(taskId, newStatus);
-    }
-    setStatusDropdownOpen(null);
-  }, [updateTaskStatus]);
+  const handleStatusChange = useCallback(
+    (taskId: string, newStatus: StatusType) => {
+      if (updateTaskStatus) {
+        updateTaskStatus(taskId, newStatus);
+      }
+      setStatusDropdownOpen(null);
+    },
+    [updateTaskStatus]
+  );
 
-  const handleEditStart = useCallback((taskId: string, currentTitle: string) => {
-    setEditingTask(taskId);
-    setEditTitle(currentTitle);
-    setDropdownOpen(null);
-  }, []);
+  const handleEditStart = useCallback(
+    (taskId: string, currentTitle: string) => {
+      setEditingTask(taskId);
+      setEditTitle(currentTitle);
+      setDropdownOpen(null);
+    },
+    []
+  );
 
-  const handleEditSave = useCallback((taskId: string) => {
-    const trimmedTitle = editTitle.trim();
+  const handleEditSave = useCallback(
+    (taskId: string) => {
+      const trimmedTitle = editTitle.trim();
 
-    if (!trimmedTitle || trimmedTitle.length < 3) {
-      errorToast("Minimum 3 characters required");
-      return;
-    }
+      if (!trimmedTitle || trimmedTitle.length < 3) {
+        errorToast("Minimum 3 characters required");
+        return;
+      }
 
-    if (updateTaskTitle) {
-      updateTaskTitle(taskId, trimmedTitle);
-    }
+      if (updateTaskTitle) {
+        updateTaskTitle(taskId, trimmedTitle);
+      }
 
-    setEditingTask(null);
-    setEditTitle("");
-  }, [editTitle, updateTaskTitle]);
+      setEditingTask(null);
+      setEditTitle("");
+    },
+    [editTitle, updateTaskTitle]
+  );
 
   const handleEditCancel = useCallback(() => {
     setEditingTask(null);
     setEditTitle("");
   }, []);
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent, taskId: string) => {
-    if (e.key === "Enter") {
-      handleEditSave(taskId);
-    } else if (e.key === "Escape") {
-      handleEditCancel();
-    }
-  }, [handleEditSave, handleEditCancel]);
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent, taskId: string) => {
+      if (e.key === "Enter") {
+        handleEditSave(taskId);
+      } else if (e.key === "Escape") {
+        handleEditCancel();
+      }
+    },
+    [handleEditSave, handleEditCancel]
+  );
 
   return (
     <div className="p-3 max-w-5xl mx-auto">
@@ -131,8 +150,18 @@ export default function TaskList({
                           className="p-1 text-green-600 hover:text-green-800 transition-colors duration-150"
                           title="Save"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
                           </svg>
                         </button>
                         <button
@@ -140,8 +169,18 @@ export default function TaskList({
                           className="p-1 text-red-600 hover:text-red-800 transition-colors duration-150"
                           title="Cancel"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
                           </svg>
                         </button>
                       </div>
@@ -162,8 +201,18 @@ export default function TaskList({
                         )} hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
                       >
                         {task.status}
-                        <svg className="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <svg
+                          className="ml-1 w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </button>
 
@@ -173,7 +222,12 @@ export default function TaskList({
                             {statusOptions.map((status) => (
                               <button
                                 key={status}
-                                onClick={() => handleStatusChange(task._id, status as StatusType)}
+                                onClick={() =>
+                                  handleStatusChange(
+                                    task._id,
+                                    status as StatusType
+                                  )
+                                }
                                 className={`block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150 ${
                                   task.status === status
                                     ? "bg-blue-50 text-blue-700 font-medium"
@@ -200,7 +254,12 @@ export default function TaskList({
                         }
                         className="text-gray-600 hover:text-blue-600 focus:outline-none transition-colors duration-200"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                          className="w-5 h-5"
+                        >
                           <circle cx="5" cy="12" r="2" />
                           <circle cx="12" cy="12" r="2" />
                           <circle cx="19" cy="12" r="2" />
@@ -211,7 +270,9 @@ export default function TaskList({
                         <div className="absolute right-0 z-10 mt-2 w-28 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 border border-gray-200">
                           <div className="py-1">
                             <button
-                              onClick={() => handleEditStart(task._id, task.title)}
+                              onClick={() =>
+                                handleEditStart(task._id, task.title)
+                              }
                               className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                             >
                               Edit

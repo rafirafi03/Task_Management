@@ -8,7 +8,7 @@ type SignupFormValues = {
 };
 
 type SignupFormErrors = {
-  name?: string
+  name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -16,7 +16,7 @@ type SignupFormErrors = {
 
 const useSignupForm = () => {
   const [values, setValues] = useState<SignupFormValues>({
-    name:"",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",

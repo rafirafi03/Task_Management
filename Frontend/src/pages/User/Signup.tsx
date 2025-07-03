@@ -2,7 +2,12 @@ import { useSignupMutation } from "../../store/slices/apiSlice";
 import useSignupForm from "../../hooks/useSignupForm";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { dismissToast, errorToast, loadingToast, successToast } from "../../utils/toast";
+import {
+  dismissToast,
+  errorToast,
+  loadingToast,
+  successToast,
+} from "../../utils/toast";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 
@@ -11,45 +16,54 @@ export default function Signup() {
   const [signupMutation] = useSignupMutation();
   const { values, errors, handleChange, validate, resetForm } = useSignupForm();
 
-  const signupHandler = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const signupHandler = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (!validate()) return;
+      if (!validate()) return;
 
-    try {
-      const toastLoading = loadingToast("submitting");
-      const res = await signupMutation({
-        name: values.name,
-        email: values.email,
-        password: values.password,
-      }).unwrap();
+      try {
+        const toastLoading = loadingToast("submitting");
+        const res = await signupMutation({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+        }).unwrap();
 
-      dismissToast(toastLoading);
+        dismissToast(toastLoading);
 
-      if (res.success && res.token) {
-        localStorage.setItem("token", res.token);
-        successToast("Sign in successful");
-        resetForm();
-        navigate("/");
-      } else {
-        errorToast(res?.error || "Login failed");
+        if (res.success && res.token) {
+          localStorage.setItem("token", res.token);
+          successToast("Sign in successful");
+          resetForm();
+          navigate("/");
+        } else {
+          errorToast(res?.error || "Login failed");
+        }
+      } catch (err) {
+        toast.dismiss();
+
+        const errorMessage =
+          (err as { data?: { error?: string }; status?: number })?.data
+            ?.error || "Signup failed";
+
+        errorToast(errorMessage);
       }
-      
-    } catch (err) {
-      toast.dismiss();
-
-
-      const errorMessage =
-        (err as { data?: { error?: string }; status?: number })?.data?.error ||
-        "Signup failed";
-
-      errorToast(errorMessage);
-    }
-  }, [signupMutation, values.name, values.email, values.password, validate, resetForm, navigate]);
+    },
+    [
+      signupMutation,
+      values.name,
+      values.email,
+      values.password,
+      validate,
+      resetForm,
+      navigate,
+    ]
+  );
 
   const handleLoginNavigation = useCallback(() => {
-      navigate('/login');
-    }, [navigate]);
+    navigate("/login");
+  }, [navigate]);
 
   return (
     <div className="flex justify-center items-center h-screen">

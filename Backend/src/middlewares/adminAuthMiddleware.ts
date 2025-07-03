@@ -18,7 +18,7 @@ const authMiddleware = (
       .status(HttpStatusCode.UNAUTHORIZED)
       .json({ success: false, message: "Unauthorized" });
 
-      return
+    return;
   }
 
   try {

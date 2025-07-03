@@ -6,7 +6,7 @@ import { useMemo } from "react";
 
 export default function UserDetail() {
   const { userId } = useParams();
-  
+
   const { data, isLoading, error } = useFetchUserDetailsQuery(userId, {
     skip: !userId,
   });

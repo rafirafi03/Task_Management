@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import type { Id } from 'react-toastify'
+import type { Id } from "react-toastify";
 
 export const successToast = (message: string) => {
   toast.success(message);
@@ -7,7 +7,7 @@ export const successToast = (message: string) => {
 
 export const errorToast = (message: string) => {
   toast.error(message, {
-    toastId: "edit-title-error", // fixed ID prevents duplicates
+    toastId: "edit-title-error", // fixed ID to prevents duplicates
   });
 };
 

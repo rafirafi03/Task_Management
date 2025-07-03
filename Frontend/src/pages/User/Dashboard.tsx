@@ -35,12 +35,12 @@ export default function Dashboard() {
     const id = getUserIdFromToken("token");
     setUserId(id);
   }, []);
-  
+
   const [activeStatus, setActiveStatus] = useState<string>("all");
-  
+
   // Local state for optimistic updates
   const [localTasks, setLocalTasks] = useState<Task[]>([]);
-  
+
   // Always fetch all tasks from server with cache invalidation
   const {
     data,
@@ -50,7 +50,7 @@ export default function Dashboard() {
     refetch, // Add refetch function
   } = useFetchTasksQuery(
     { userId, status: "all" },
-    { 
+    {
       skip: !userId,
       // Force refetch on mount/user change
       refetchOnMountOrArgChange: true,
@@ -59,7 +59,7 @@ export default function Dashboard() {
       refetchOnReconnect: true,
     }
   );
-  
+
   const [createTaskMutation] = useCreateTaskMutation();
   const [deleteTaskMutation] = useDeleteTaskMutation();
   const [updateStatusMutation] = useUpdateStatusMutation();
@@ -85,7 +85,7 @@ export default function Dashboard() {
   const isError = useMemo(() => {
     return fetchErrorCheck({
       fetchError: fetchTaskError,
-      tokenName: 'token'
+      tokenName: "token",
     });
   }, [fetchTaskError]);
 
@@ -103,214 +103,225 @@ export default function Dashboard() {
     return localTasks.filter((task: Task) => task.status === activeStatus);
   }, [localTasks, activeStatus]);
 
-  const deleteTask = useCallback(async (taskId: string) => {
-    // Optimistic update - remove from local state immediately
-    const originalTasks = [...localTasks];
-    setLocalTasks(prev => prev.filter(task => task._id !== taskId));
+  const deleteTask = useCallback(
+    async (taskId: string) => {
+      // Optimistic update - remove from local state immediately
+      const originalTasks = [...localTasks];
+      setLocalTasks((prev) => prev.filter((task) => task._id !== taskId));
 
-    try {
-      const toastLoading = loadingToast("Deleting Task...");
-      const res = await deleteTaskMutation({ taskId }).unwrap();
+      try {
+        const toastLoading = loadingToast("Deleting Task...");
+        const res = await deleteTaskMutation({ taskId }).unwrap();
 
-      dismissToast(toastLoading);
+        dismissToast(toastLoading);
 
-      if (res.success) {
-        successToast("Deleted");
-        // Keep the optimistic update - no need to refetch
-      } else {
-        // Revert optimistic update on failure
+        if (res.success) {
+          successToast("Deleted");
+          // Keep the optimistic update - no need to refetch
+        } else {
+          // Revert optimistic update on failure
+          setLocalTasks(originalTasks);
+          errorToast(res?.error || "Deletion failed");
+        }
+      } catch (err) {
+        // Revert optimistic update on error
         setLocalTasks(originalTasks);
-        errorToast(res?.error || "Deletion failed");
+        toast.dismiss();
+
+        const errorMessage =
+          (err as { data?: { error?: string }; status?: number })?.data
+            ?.error || "Deletion failed";
+
+        errorToast(errorMessage);
       }
-    } catch (err) {
-      // Revert optimistic update on error
-      setLocalTasks(originalTasks);
-      toast.dismiss();
+    },
+    [deleteTaskMutation, localTasks]
+  );
 
-      const errorMessage =
-        (err as { data?: { error?: string }; status?: number })?.data?.error ||
-        "Deletion failed";
+  const addTask = useCallback(
+    async (title: string) => {
+      if (!title.trim()) {
+        errorToast("Task title cannot be empty");
+        return;
+      }
 
-      errorToast(errorMessage);
-    }
-  }, [deleteTaskMutation, localTasks]);
+      // Create temporary task for optimistic update
+      const tempTask: Task = {
+        _id: `temp-${Date.now()}`, // Temporary ID
+        title: title.trim(),
+        status: "pending",
+      };
 
-  const addTask = useCallback(async (title: string) => {
-    if (!title.trim()) {
-      errorToast("Task title cannot be empty");
-      return;
-    }
+      // Optimistic update - add to local state immediately
+      setLocalTasks((prev) => [...prev, tempTask]);
 
-    // Create temporary task for optimistic update
-    const tempTask: Task = {
-      _id: `temp-${Date.now()}`, // Temporary ID
-      title: title.trim(),
-      status: "pending"
-    };
+      try {
+        const toastLoading = loadingToast("Adding Task...");
+        const res = await createTaskMutation({
+          title: title.trim(),
+          userId,
+        }).unwrap();
 
-    // Optimistic update - add to local state immediately
-    setLocalTasks(prev => [...prev, tempTask]);
+        dismissToast(toastLoading);
 
-    try {
-      const toastLoading = loadingToast("Adding Task...");
-      const res = await createTaskMutation({ title: title.trim(), userId }).unwrap();
+        if (res.success) {
+          successToast("Added successfully");
+          // Replace temp task with real task from server
+          if (res.task) {
+            setLocalTasks((prev) =>
+              prev.map((task) => (task._id === tempTask._id ? res.task : task))
+            );
+          }
+        } else {
+          // Remove temp task on failure
+          setLocalTasks((prev) =>
+            prev.filter((task) => task._id !== tempTask._id)
+          );
+          errorToast(res?.error || "Adding failed");
+        }
+      } catch (err) {
+        // Remove temp task on error
+        setLocalTasks((prev) =>
+          prev.filter((task) => task._id !== tempTask._id)
+        );
+        toast.dismiss();
 
-      dismissToast(toastLoading);
+        const errorMessage =
+          (err as { data?: { error?: string }; status?: number })?.data
+            ?.error || "Adding failed";
 
-      if (res.success) {
-        successToast("Added successfully");
-        // Replace temp task with real task from server
-        if (res.task) {
-          setLocalTasks(prev => 
-            prev.map(task => 
-              task._id === tempTask._id ? res.task : task
+        errorToast(errorMessage);
+      }
+    },
+    [createTaskMutation, userId]
+  );
+
+  const handleStatusUpdate = useCallback(
+    async (taskId: string, status: "pending" | "in-progress" | "completed") => {
+      // Validate status
+      if (!["pending", "in-progress", "completed"].includes(status)) {
+        errorToast("Invalid status");
+        return;
+      }
+
+      // Find the task to update
+      const taskToUpdate = localTasks.find((task) => task._id === taskId);
+      if (!taskToUpdate) {
+        errorToast("Task not found");
+        return;
+      }
+
+      const originalStatus = taskToUpdate.status;
+
+      // Optimistic update - update status immediately
+      setLocalTasks((prev) =>
+        prev.map((task) =>
+          task._id === taskId ? { ...task, status: status } : task
+        )
+      );
+
+      try {
+        const toastLoading = loadingToast("Updating Status...");
+        const res = await updateStatusMutation({
+          taskId,
+          status: status,
+        }).unwrap();
+
+        dismissToast(toastLoading);
+
+        if (res.success) {
+          successToast("Status updated");
+          // Keep the optimistic update
+        } else {
+          // Revert optimistic update on failure
+          setLocalTasks((prev) =>
+            prev.map((task) =>
+              task._id === taskId ? { ...task, status: originalStatus } : task
             )
           );
+          errorToast(res?.error || "Update failed");
         }
-      } else {
-        // Remove temp task on failure
-        setLocalTasks(prev => prev.filter(task => task._id !== tempTask._id));
-        errorToast(res?.error || "Adding failed");
-      }
-    } catch (err) {
-      // Remove temp task on error
-      setLocalTasks(prev => prev.filter(task => task._id !== tempTask._id));
-      toast.dismiss();
-
-      const errorMessage =
-        (err as { data?: { error?: string }; status?: number })?.data?.error ||
-        "Adding failed";
-
-      errorToast(errorMessage);
-    }
-  }, [createTaskMutation, userId]);
-
-  const handleStatusUpdate = useCallback(async (taskId: string, status: "pending" | "in-progress" | "completed") => {
-    // Validate status
-    if (!["pending", "in-progress", "completed"].includes(status)) {
-      errorToast("Invalid status");
-      return;
-    }
-
-    // Find the task to update
-    const taskToUpdate = localTasks.find(task => task._id === taskId);
-    if (!taskToUpdate) {
-      errorToast("Task not found");
-      return;
-    }
-
-    const originalStatus = taskToUpdate.status;
-
-    // Optimistic update - update status immediately
-    setLocalTasks(prev => 
-      prev.map(task => 
-        task._id === taskId 
-          ? { ...task, status: status }
-          : task
-      )
-    );
-
-    try {
-      const toastLoading = loadingToast("Updating Status...");
-      const res = await updateStatusMutation({ taskId, status: status }).unwrap();
-
-      dismissToast(toastLoading);
-
-      if (res.success) {
-        successToast("Status updated");
-        // Keep the optimistic update
-      } else {
-        // Revert optimistic update on failure
-        setLocalTasks(prev => 
-          prev.map(task => 
-            task._id === taskId 
-              ? { ...task, status: originalStatus }
-              : task
+      } catch (err) {
+        // Revert optimistic update on error
+        setLocalTasks((prev) =>
+          prev.map((task) =>
+            task._id === taskId ? { ...task, status: originalStatus } : task
           )
         );
-        errorToast(res?.error || "Update failed");
+        toast.dismiss();
+
+        const errorMessage =
+          (err as { data?: { error?: string }; status?: number })?.data
+            ?.error || "Update failed";
+
+        errorToast(errorMessage);
       }
-    } catch (err) {
-      // Revert optimistic update on error
-      setLocalTasks(prev => 
-        prev.map(task => 
-          task._id === taskId 
-            ? { ...task, status: originalStatus }
-            : task
+    },
+    [updateStatusMutation, localTasks]
+  );
+
+  const handleTitleUpdate = useCallback(
+    async (taskId: string, newTitle: string) => {
+      if (!newTitle.trim()) {
+        errorToast("Task title cannot be empty");
+        return;
+      }
+
+      // Find the task to update
+      const taskToUpdate = localTasks.find((task) => task._id === taskId);
+      if (!taskToUpdate) {
+        errorToast("Task not found");
+        return;
+      }
+
+      const originalTitle = taskToUpdate.title;
+
+      // Optimistic update - update title immediately
+      setLocalTasks((prev) =>
+        prev.map((task) =>
+          task._id === taskId ? { ...task, title: newTitle.trim() } : task
         )
       );
-      toast.dismiss();
 
-      const errorMessage =
-        (err as { data?: { error?: string }; status?: number })?.data?.error ||
-        "Update failed";
+      try {
+        const toastLoading = loadingToast("Updating Task...");
+        const res = await updateTitleMutation({
+          taskId,
+          title: newTitle.trim(),
+        }).unwrap();
 
-      errorToast(errorMessage);
-    }
-  }, [updateStatusMutation, localTasks]);
+        dismissToast(toastLoading);
 
-  const handleTitleUpdate = useCallback(async (taskId: string, newTitle: string) => {
-    if (!newTitle.trim()) {
-      errorToast("Task title cannot be empty");
-      return;
-    }
-
-    // Find the task to update
-    const taskToUpdate = localTasks.find(task => task._id === taskId);
-    if (!taskToUpdate) {
-      errorToast("Task not found");
-      return;
-    }
-
-    const originalTitle = taskToUpdate.title;
-
-    // Optimistic update - update title immediately
-    setLocalTasks(prev => 
-      prev.map(task => 
-        task._id === taskId 
-          ? { ...task, title: newTitle.trim() }
-          : task
-      )
-    );
-
-    try {
-      const toastLoading = loadingToast("Updating Task...");
-      const res = await updateTitleMutation({ taskId, title: newTitle.trim() }).unwrap();
-
-      dismissToast(toastLoading);
-
-      if (res.success) {
-        successToast("Task updated");
-        // Keep the optimistic update
-      } else {
-        // Revert optimistic update on failure
-        setLocalTasks(prev => 
-          prev.map(task => 
-            task._id === taskId 
-              ? { ...task, title: originalTitle }
-              : task
+        if (res.success) {
+          successToast("Task updated");
+          // Keep the optimistic update
+        } else {
+          // Revert optimistic update on failure
+          setLocalTasks((prev) =>
+            prev.map((task) =>
+              task._id === taskId ? { ...task, title: originalTitle } : task
+            )
+          );
+          errorToast(res?.error || "Update failed");
+        }
+      } catch (err) {
+        // Revert optimistic update on error
+        setLocalTasks((prev) =>
+          prev.map((task) =>
+            task._id === taskId ? { ...task, title: originalTitle } : task
           )
         );
-        errorToast(res?.error || "Update failed");
+        toast.dismiss();
+
+        const errorMessage =
+          (err as { data?: { error?: string }; status?: number })?.data
+            ?.error || "Update failed";
+
+        errorToast(errorMessage);
       }
-    } catch (err) {
-      // Revert optimistic update on error
-      setLocalTasks(prev => 
-        prev.map(task => 
-          task._id === taskId 
-            ? { ...task, title: originalTitle }
-            : task
-        )
-      );
-      toast.dismiss();
-
-      const errorMessage =
-        (err as { data?: { error?: string }; status?: number })?.data?.error ||
-        "Update failed";
-
-      errorToast(errorMessage);
-    }
-  }, [updateTitleMutation, localTasks]);
+    },
+    [updateTitleMutation, localTasks]
+  );
 
   if (isLoading || isFetching) {
     return (
@@ -324,7 +335,10 @@ export default function Dashboard() {
     <>
       <Header />
       <InputWithButton addTask={addTask} />
-      <Statustab activeStatus={activeStatus} onStatusChange={handleStatusChange} />
+      <Statustab
+        activeStatus={activeStatus}
+        onStatusChange={handleStatusChange}
+      />
       <TaskList
         deleteTask={deleteTask}
         tasks={filteredTasks}

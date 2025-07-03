@@ -5,16 +5,22 @@ interface StatustabProps {
   onStatusChange: (status: string) => void;
 }
 
-export default function Statustab({ activeStatus, onStatusChange }: StatustabProps) {
-  const handleStatusClick = useCallback((status: string) => {
-    onStatusChange(status);
-  }, [onStatusChange]);
+export default function Statustab({
+  activeStatus,
+  onStatusChange,
+}: StatustabProps) {
+  const handleStatusClick = useCallback(
+    (status: string) => {
+      onStatusChange(status);
+    },
+    [onStatusChange]
+  );
 
   const statuses = [
     { label: "All", value: "all" },
     { label: "Pending", value: "pending" },
     { label: "In Progress", value: "in-progress" },
-    { label: "Completed", value: "completed" }
+    { label: "Completed", value: "completed" },
   ];
 
   return (
@@ -25,8 +31,8 @@ export default function Statustab({ activeStatus, onStatusChange }: StatustabPro
             <a
               onClick={() => handleStatusClick(status.value)}
               className={`inline-block p-4 border-transparent rounded-t-lg cursor-pointer hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 ${
-                activeStatus === status.value 
-                  ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500" 
+                activeStatus === status.value
+                  ? "text-blue-600 border-b-2 border-blue-600 dark:text-blue-500 dark:border-blue-500"
                   : ""
               }`}
             >

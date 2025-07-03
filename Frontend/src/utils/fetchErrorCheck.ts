@@ -4,7 +4,7 @@ import { warningToast } from "./toast";
 
 interface PageProps {
   fetchError: FetchBaseQueryError | SerializedError | undefined;
-  tokenName: string
+  tokenName: string;
 }
 
 export default function FetchErrorCheck({ fetchError, tokenName }: PageProps) {

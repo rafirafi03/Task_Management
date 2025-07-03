@@ -6,25 +6,27 @@ import fetchErrorCheck from "../../utils/fetchErrorCheck";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
-    const navigate = useNavigate()
-  const { data, isLoading, error: fetchUserError } = useFetchUsersQuery(undefined);
+  const navigate = useNavigate();
+  const {
+    data,
+    isLoading,
+    error: fetchUserError,
+  } = useFetchUsersQuery(undefined);
 
   const isError = useMemo(() => {
-      return fetchErrorCheck({
-        fetchError: fetchUserError,
-        tokenName: 'adminToken'
-      });
-    }, [fetchUserError]);
-  
-    useEffect(() => {
-      if (isError) {
-        navigate("/login");
-      }
-    }, [isError, navigate]);
+    return fetchErrorCheck({
+      fetchError: fetchUserError,
+      tokenName: "adminToken",
+    });
+  }, [fetchUserError]);
 
+  useEffect(() => {
+    if (isError) {
+      navigate("/login");
+    }
+  }, [isError, navigate]);
 
   const users = useMemo(() => data?.users, [data?.users]);
-
 
   if (isLoading) {
     return (
@@ -36,7 +38,6 @@ export default function Dashboard() {
       </>
     );
   }
-
 
   if (fetchUserError) {
     return (

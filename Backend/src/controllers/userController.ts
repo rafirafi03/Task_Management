@@ -158,14 +158,14 @@ const createTask = async (req: Request, res: Response): Promise<void> => {
 
     res.status(HttpStatusCode.CREATED).json({
       success: true,
-      message: "✅ Task created successfully",
+      message: "Task created successfully",
       task: savedTask,
     });
   } catch (error) {
     console.error("Error in createTask:", error);
     res
       .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: "❌ Error processing data", error });
+      .json({ success: false, message: "Error processing data", error });
   }
 };
 
@@ -188,21 +188,19 @@ const updateStatus = async (req: Request, res: Response): Promise<void> => {
     );
 
     if (!updatedTask) {
-      res
-        .status(HttpStatusCode.NOT_FOUND)
-        .json({ message: "❌ Task not found" });
+      res.status(HttpStatusCode.NOT_FOUND).json({ message: "Task not found" });
       return;
     }
 
     res.status(HttpStatusCode.OK).json({
       success: true,
-      message: "✅ Task status updated successfully",
+      message: "Task status updated successfully",
       task: updatedTask,
     });
   } catch (error) {
     res
       .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-      .json({ message: "❌ Error processing data", error });
+      .json({ message: "Error processing data", error });
   }
 };
 
@@ -225,21 +223,19 @@ const updateTask = async (req: Request, res: Response): Promise<void> => {
     );
 
     if (!updatedTask) {
-      res
-        .status(HttpStatusCode.NOT_FOUND)
-        .json({ message: "❌ Task not found" });
+      res.status(HttpStatusCode.NOT_FOUND).json({ message: "Task not found" });
       return;
     }
 
     res.status(HttpStatusCode.OK).json({
       success: true,
-      message: "✅ Task updated successfully",
+      message: "Task updated successfully",
       task: updatedTask,
     });
   } catch (error) {
     res
       .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
-      .json({ message: "❌ Error processing data", error });
+      .json({ message: "Error processing data", error });
   }
 };
 
@@ -263,7 +259,7 @@ export const deleteTask = async (
     if (!taskId) {
       res.status(HttpStatusCode.BAD_REQUEST).json({
         success: false,
-        message: "❌ Task ID is required",
+        message: "Task ID is required",
       });
       return;
     }
@@ -273,21 +269,21 @@ export const deleteTask = async (
     if (!deletedTask) {
       res.status(HttpStatusCode.NOT_FOUND).json({
         success: false,
-        message: "❌ Task not found",
+        message: "Task not found",
       });
       return;
     }
 
     res.status(HttpStatusCode.OK).json({
       success: true,
-      message: "✅ Task deleted successfully",
+      message: "Task deleted successfully",
       task: deletedTask,
     });
   } catch (error) {
     console.error("Error in deleteTask:", error);
     res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "❌ Error processing data",
+      message: "Error processing data",
       error,
     });
   }
@@ -307,12 +303,10 @@ const fetchTasks = async (req: Request, res: Response): Promise<void> => {
     }
 
     const { userId } = req.params;
-    const { status } = req.query; // Get status from query parameters
+    const { status } = req.query;
 
-    // Build the filter object
     const filter: any = { userId };
 
-    // Add status filter if provided and not 'all'
     if (status && status !== "all") {
       filter.status = status;
     }
@@ -327,7 +321,7 @@ const fetchTasks = async (req: Request, res: Response): Promise<void> => {
     console.error("Error in fetchTasks:", error);
     res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "❌ Error processing data",
+      message: "Error processing data",
     });
   }
 };
@@ -344,7 +338,7 @@ const logout = async (req: Request, res: Response): Promise<void> => {
     console.error("Error processing trips:", error);
     res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
       success: false,
-      message: "❌ Error processing data",
+      message: "Error processing data",
       error: error instanceof Error ? error.message : "Unknown error occurred",
     });
   }

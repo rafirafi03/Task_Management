@@ -40,14 +40,14 @@ export const apiSlices = createApi({
       query: (patchData) => ({
         url: `/updateTask`,
         method: HttpMethod.PATCH,
-        body: patchData
+        body: patchData,
       }),
     }),
     updateStatus: builder.mutation({
       query: (patchData) => ({
         url: `/updateStatus`,
         method: HttpMethod.PATCH,
-        body: patchData
+        body: patchData,
       }),
     }),
     deleteTask: builder.mutation({
@@ -58,8 +58,10 @@ export const apiSlices = createApi({
       }),
     }),
     fetchTasks: builder.query({
-      query: ({userId, status}) => ({
-        url: `/fetchTasks/${userId}${status && status !== 'all' ? `?status=${status}` : ''}`,
+      query: ({ userId, status }) => ({
+        url: `/fetchTasks/${userId}${
+          status && status !== "all" ? `?status=${status}` : ""
+        }`,
         method: HttpMethod.GET,
       }),
     }),
@@ -102,5 +104,5 @@ export const {
   useFetchUserDetailsQuery,
   useLogoutMutation,
   useAdminLoginMutation,
-  useAdminLogoutMutation
+  useAdminLogoutMutation,
 } = apiSlices;
