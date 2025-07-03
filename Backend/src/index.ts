@@ -25,7 +25,7 @@ app.use(
 );
 
 app.get('/', (req,res) => {
-    res.send('task management backend is running')
+    res.send('task management backend running')
 })
 
 app.use('/api', userRoutes)
