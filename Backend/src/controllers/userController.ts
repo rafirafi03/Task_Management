@@ -6,10 +6,11 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import TaskModel from "../models/taskModel";
 import { signupSchema } from "../validations/authValidation";
-import taskModel from "../models/taskModel";
 import { createTaskSchema } from "../validations/createTaskValidation";
 import { fetchTasksSchema } from "../validations/fetchTaskValidation";
 import { deleteTaskSchema } from "../validations/deleteTaskValidation";
+import { updateStatusSchema } from "../validations/updateStatusValidation";
+import { updateTaskSchema } from "../validations/updateTaskValidation";
 
 dotenv.config();
 
@@ -24,7 +25,9 @@ const signupUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { email, password } = req.body;
+    console.log(req.body, "req...bodddyydydydyyd");
+
+    const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -36,7 +39,7 @@ const signupUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword });
     await user.save();
 
     const token = jwt.sign(
@@ -146,7 +149,7 @@ const createTask = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const newTask = new taskModel({
+    const newTask = new TaskModel({
       title,
       userId,
     });
@@ -166,8 +169,73 @@ const createTask = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+const updateStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { error } = updateStatusSchema.validate(req.body);
+    if (error) {
+      res.status(HttpStatusCode.BAD_REQUEST).json({
+        success: false,
+        error: error.details[0].message,
+      });
+      return;
+    }
+    const { taskId, status } = req.body;
+
+    const updatedTask = await TaskModel.findByIdAndUpdate(
+      taskId,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedTask) {
+      res
+        .status(HttpStatusCode.NOT_FOUND)
+        .json({ message: "❌ Task not found" });
+      return;
+    }
+
+    res.status(HttpStatusCode.OK).json({
+      success: true,
+      message: "✅ Task status updated successfully",
+      task: updatedTask,
+    });
+  } catch (error) {
+    res
+      .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
+      .json({ message: "❌ Error processing data", error });
+  }
+};
+
 const updateTask = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { error } = updateTaskSchema.validate(req.body);
+    if (error) {
+      res.status(HttpStatusCode.BAD_REQUEST).json({
+        success: false,
+        error: error.details[0].message,
+      });
+      return;
+    }
+    const { taskId, title } = req.body;
+
+    const updatedTask = await TaskModel.findByIdAndUpdate(
+      taskId,
+      { title },
+      { new: true }
+    );
+
+    if (!updatedTask) {
+      res
+        .status(HttpStatusCode.NOT_FOUND)
+        .json({ message: "❌ Task not found" });
+      return;
+    }
+
+    res.status(HttpStatusCode.OK).json({
+      success: true,
+      message: "✅ Task updated successfully",
+      task: updatedTask,
+    });
   } catch (error) {
     res
       .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
@@ -180,7 +248,6 @@ export const deleteTask = async (
   res: Response
 ): Promise<void> => {
   try {
-
     const { error } = deleteTaskSchema.validate(req.body);
 
     if (error) {
@@ -240,8 +307,17 @@ const fetchTasks = async (req: Request, res: Response): Promise<void> => {
     }
 
     const { userId } = req.params;
+    const { status } = req.query; // Get status from query parameters
 
-    const tasks = await TaskModel.find({ userId }).sort({ createdAt: -1 });
+    // Build the filter object
+    const filter: any = { userId };
+
+    // Add status filter if provided and not 'all'
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+
+    const tasks = await TaskModel.find(filter).sort({ createdAt: -1 });
 
     res.status(HttpStatusCode.OK).json({
       success: true,
@@ -279,6 +355,7 @@ const userController = {
   loginUser,
   createTask,
   updateTask,
+  updateStatus,
   fetchTasks,
   deleteTask,
   logout,

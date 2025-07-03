@@ -1,12 +1,14 @@
 import { useState } from "react";
 
 type SignupFormValues = {
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
 };
 
 type SignupFormErrors = {
+  name?: string
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -14,6 +16,7 @@ type SignupFormErrors = {
 
 const useSignupForm = () => {
   const [values, setValues] = useState<SignupFormValues>({
+    name:"",
     email: "",
     password: "",
     confirmPassword: "",
@@ -28,6 +31,12 @@ const useSignupForm = () => {
 
   const validate = () => {
     const newErrors: SignupFormErrors = {};
+
+    if (!values.name) {
+      newErrors.name = "Name is required";
+    } else if (values.name.length < 3) {
+      newErrors.name = "Name must be at least 3 characters";
+    }
 
     if (!values.email) {
       newErrors.email = "Email is required";
@@ -51,6 +60,7 @@ const useSignupForm = () => {
 
   const resetForm = () => {
     setValues({
+      name: "",
       email: "",
       password: "",
       confirmPassword: "",

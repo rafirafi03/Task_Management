@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import useTaskForm from "../../../hooks/useTaskForm";
 
 type pageProps = {
@@ -7,11 +8,11 @@ type pageProps = {
 export default function InputWithButton({ addTask }: pageProps) {
   const { values, errors, handleChange, validate, resetForm } = useTaskForm();
 
-  const handleSubmit = () => {
-    if(!validate()) return
-    addTask(values.title);
-    resetForm()
-  };
+  const handleSubmit = useCallback(() => {
+  if (!validate()) return;
+  addTask(values.title.trim());
+  resetForm();
+}, [addTask, resetForm, validate, values.title]);
 
   return (
     <div className="flex items-center border border-gray-800 rounded-md text-white overflow-hidden max-w-5xl mt-25 mx-auto">

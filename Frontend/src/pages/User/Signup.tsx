@@ -4,13 +4,14 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { dismissToast, errorToast, loadingToast, successToast } from "../../utils/toast";
 import { useNavigate } from "react-router-dom";
+import { useCallback } from "react";
 
 export default function Signup() {
   const navigate = useNavigate();
   const [signupMutation] = useSignupMutation();
   const { values, errors, handleChange, validate, resetForm } = useSignupForm();
 
-  const signupHandler = async (e: React.FormEvent) => {
+  const signupHandler = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validate()) return;
@@ -18,6 +19,7 @@ export default function Signup() {
     try {
       const toastLoading = loadingToast("submitting");
       const res = await signupMutation({
+        name: values.name,
         email: values.email,
         password: values.password,
       }).unwrap();
@@ -36,14 +38,18 @@ export default function Signup() {
     } catch (err) {
       toast.dismiss();
 
-      // Check if it's a fetchBaseQueryError (common in RTK Query)
+
       const errorMessage =
         (err as { data?: { error?: string }; status?: number })?.data?.error ||
         "Signup failed";
 
       errorToast(errorMessage);
     }
-  };
+  }, [signupMutation, values.name, values.email, values.password, validate, resetForm, navigate]);
+
+  const handleLoginNavigation = useCallback(() => {
+      navigate('/login');
+    }, [navigate]);
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -53,6 +59,26 @@ export default function Signup() {
           <h5 className="text-xl font-medium text-gray-900 dark:text-white">
             Creat a Account
           </h5>
+          <div>
+            <label
+              htmlFor="email"
+              className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >
+              Your Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              id="name"
+              value={values.name}
+              onChange={handleChange}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+              placeholder="name"
+            />
+            {errors.name && (
+              <p className="text-red-400 text-sm mt-1">{errors.name}</p>
+            )}
+          </div>
           <div>
             <label
               htmlFor="email"
@@ -124,7 +150,7 @@ export default function Signup() {
           <div className="text-sm font-medium text-gray-500 dark:text-gray-300">
             already a user?{" "}
             <a
-              onClick={()=> navigate('/login')}
+              onClick={handleLoginNavigation}
               className="text-black hover:underline dark:text-blue-500 cursor-pointer"
             >
               Login

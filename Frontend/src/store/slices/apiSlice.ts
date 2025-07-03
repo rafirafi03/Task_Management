@@ -37,9 +37,17 @@ export const apiSlices = createApi({
       }),
     }),
     updateTask: builder.mutation({
-      query: ({ taskid }) => ({
-        url: `/updateTask/${taskid}`,
+      query: (patchData) => ({
+        url: `/updateTask`,
         method: HttpMethod.PATCH,
+        body: patchData
+      }),
+    }),
+    updateStatus: builder.mutation({
+      query: (patchData) => ({
+        url: `/updateStatus`,
+        method: HttpMethod.PATCH,
+        body: patchData
       }),
     }),
     deleteTask: builder.mutation({
@@ -50,8 +58,8 @@ export const apiSlices = createApi({
       }),
     }),
     fetchTasks: builder.query({
-      query: (userId) => ({
-        url: `/fetchTasks/${userId}`,
+      query: ({userId, status}) => ({
+        url: `/fetchTasks/${userId}${status && status !== 'all' ? `?status=${status}` : ''}`,
         method: HttpMethod.GET,
       }),
     }),
@@ -87,6 +95,7 @@ export const {
   useLoginMutation,
   useCreateTaskMutation,
   useUpdateTaskMutation,
+  useUpdateStatusMutation,
   useDeleteTaskMutation,
   useFetchTasksQuery,
   useFetchUsersQuery,

@@ -6,7 +6,9 @@ export const successToast = (message: string) => {
 };
 
 export const errorToast = (message: string) => {
-  toast.error(message);
+  toast.error(message, {
+    toastId: "edit-title-error", // fixed ID prevents duplicates
+  });
 };
 
 export const loadingToast = (message: string) => {

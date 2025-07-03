@@ -1,4 +1,4 @@
-import { useLoginMutation } from "../../store/slices/apiSlice";
+import { useAdminLoginMutation } from "../../store/slices/apiSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { dismissToast, errorToast, loadingToast, successToast } from "../../utils/toast";
@@ -8,7 +8,7 @@ import { useCallback } from "react";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [loginMutation] = useLoginMutation()
+  const [loginMutation] = useAdminLoginMutation()
   const { values, errors, handleChange, validate, resetForm } = useLoginForm();
 
     const loginHandler = useCallback(async (e: React.FormEvent) => {
@@ -26,10 +26,10 @@ export default function Login() {
       dismissToast(toastLoading);
 
       if (res.success && res.token) {
-        localStorage.setItem("token", res.token);
+        localStorage.setItem("adminToken", res.token);
         successToast("Sign in successful");
         resetForm();
-        navigate("/");
+        navigate("/admin");
       } else {
         errorToast(res?.error || "Login failed");
       }
@@ -37,6 +37,7 @@ export default function Login() {
     } catch (err) {
       toast.dismiss();
 
+      // Check if it's a fetchBaseQueryError (common in RTK Query)
       const errorMessage =
         (err as { data?: { error?: string }; status?: number })?.data?.error ||
         "Login failed";
@@ -44,10 +45,6 @@ export default function Login() {
       errorToast(errorMessage);
     }
   }, [loginMutation, values.email, values.password, validate, resetForm, navigate]);
-
-  const handleSignupNavigation = useCallback(() => {
-    navigate('/signup');
-  }, [navigate]);
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -103,15 +100,6 @@ export default function Login() {
           >
             Login to your account
           </button>
-          <div className="text-sm font-medium text-gray-500 dark:text-gray-300">
-            Not registered?{" "}
-            <a
-              onClick={handleSignupNavigation}
-              className="text-black hover:underline dark:text-blue-500 hover:cursor-pointer"
-            >
-              Create account
-            </a>
-          </div>
         </form>
       </div>
     </div>

@@ -4,10 +4,10 @@ import { warningToast } from "./toast";
 
 interface PageProps {
   fetchError: FetchBaseQueryError | SerializedError | undefined;
+  tokenName: string
 }
 
-export default function FetchErrorCheck({ fetchError }: PageProps) {
-  const tokenName = "token";
+export default function FetchErrorCheck({ fetchError, tokenName }: PageProps) {
   if (fetchError && "status" in fetchError) {
     if (fetchError.status === 401) {
       warningToast("session expired! logging out");
